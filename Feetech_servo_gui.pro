@@ -29,7 +29,9 @@ SOURCES += \
         SCSProtocol.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+        SCServo.h \
+        SCSProtocol.h
 
 FORMS += \
         mainwindow.ui

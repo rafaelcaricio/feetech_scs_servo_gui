@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSerialPortInfo>
 #include "SCServo.h"
 
 namespace Ui {
@@ -22,6 +23,8 @@ private:
     SCServo servo;
 
     int getID();
+    void refreshSerialPorts();
+    void connectToSelectedPort();
 };
 
 #endif // MAINWINDOW_H

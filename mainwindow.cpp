@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    refreshSerialPorts();
 
     qDebug() << "P_CW_DEAD" << servo.readByte(getID(), P_CW_DEAD);
     qDebug() << "P_CCW_DEAD" << servo.readByte(getID(), P_CCW_DEAD);
@@ -83,6 +84,9 @@ MainWindow::MainWindow(QWidget *parent) :
         servo.writeByte(getID(), 31, 5);
         servo.writeByte(getID(), 32, 5);
     });
+
+    connect(ui->btnRefreshPorts, &QPushButton::clicked, this, &MainWindow::refreshSerialPorts);
+    connect(ui->serialPortCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::connectToSelectedPort);
 }
 
 MainWindow::~MainWindow()
@@ -93,4 +97,42 @@ MainWindow::~MainWindow()
 int MainWindow::getID()
 {
     return ui->currentID->value();
+}
+
+void MainWindow::refreshSerialPorts()
+{
+    ui->serialPortCombo->clear();
+    
+    const auto ports = QSerialPortInfo::availablePorts();
+    for (const QSerialPortInfo &info : ports) {
+        QString portName = info.portName();
+        
+#ifdef Q_OS_MACOS
+        if (portName.startsWith("cu.") || portName.startsWith("tty.")) {
+            ui->serialPortCombo->addItem("/dev/" + portName, "/dev/" + portName);
+        }
+#else
+        if (portName.startsWith("ttyUSB") || portName.startsWith("ttyACM")) {
+            ui->serialPortCombo->addItem("/dev/" + portName, "/dev/" + portName);
+        }
+#endif
+    }
+    
+    int servoPortIndex = ui->serialPortCombo->findData("/dev/cu.usbmodem5A680113791");
+    if (servoPortIndex >= 0) {
+        ui->serialPortCombo->setCurrentIndex(servoPortIndex);
+        connectToSelectedPort();
+    }
+}
+
+void MainWindow::connectToSelectedPort()
+{
+    QString selectedPort = ui->serialPortCombo->currentData().toString();
+    if (!selectedPort.isEmpty()) {
+        if (servo.setSerialPort(selectedPort)) {
+            statusBar()->showMessage("Connected to " + selectedPort, 2000);
+        } else {
+            statusBar()->showMessage("Failed to connect to " + selectedPort, 2000);
+        }
+    }
 }

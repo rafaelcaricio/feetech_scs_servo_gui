@@ -1,8 +1,8 @@
 /*
  * SCServo.cpp
- * Ó²¼þÍ¨ÐÅ½Ó¿Ú
- * ÈÕÆÚ: 2016.8.9
- * ×÷Õß: Ì·ÐÛÀÖ
+ * Ó²ï¿½ï¿½Í¨ï¿½Å½Ó¿ï¿½
+ * ï¿½ï¿½ï¿½ï¿½: 2016.8.9
+ * ï¿½ï¿½ï¿½ï¿½: Ì·ï¿½ï¿½ï¿½ï¿½
  */
 
 
@@ -13,10 +13,7 @@
 SCServo::SCServo()
 {
 	IOTimeOut = 2;
-    pSerial.setPortName("/dev/ttyUSB0");
     pSerial.setBaudRate(1000000);
-    pSerial.open(QIODevice::ReadWrite);
-    qDebug() << "isOpen: " << pSerial.isOpen();
 }
 
 int SCServo::readSCS(unsigned char *nDat, int nLen)
@@ -51,4 +48,25 @@ int SCServo::writeSCS(unsigned char bDat)
 void SCServo::flushSCS()
 {
     pSerial.readAll();
+}
+
+bool SCServo::setSerialPort(const QString& portName)
+{
+    closeSerial();
+    pSerial.setPortName(portName);
+    bool success = pSerial.open(QIODevice::ReadWrite);
+    qDebug() << "Serial port" << portName << "isOpen:" << success;
+    return success;
+}
+
+void SCServo::closeSerial()
+{
+    if (pSerial.isOpen()) {
+        pSerial.close();
+    }
+}
+
+bool SCServo::isConnected() const
+{
+    return pSerial.isOpen();
 }
